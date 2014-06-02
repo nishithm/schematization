@@ -4,9 +4,9 @@
 ***************************************************************************
     __init__.py
     ---------------------
-    Date                 : July 2013
-    Copyright            : (C) 2013 by Victor Olaya
-    Email                : volayaf at gmail dot com
+    Date                 : May 2014
+    Copyright            : (C) 2014 by Nishith Maheshwari
+    Email                : nshthm at gmail dot com
 ***************************************************************************
 *                                                                         *
 *   This program is free software; you can redistribute it and/or modify  *
@@ -17,9 +17,9 @@
 ***************************************************************************
 """
 
-__author__ = 'Victor Olaya'
-__date__ = 'July 2013'
-__copyright__ = '(C) 2013, Victor Olaya'
+__author__ = 'Nishith Maheshwari'
+__date__ = 'May 2014'
+__copyright__ = '(C) 2014, Nishith Maheshwari'
 
 # This will get replaced with a git SHA1 when you do a git archive
 
@@ -27,7 +27,7 @@ __revision__ = '$Format:%H$'
 
 from processing.core.AlgorithmProvider import AlgorithmProvider
 from processing.core.ProcessingConfig import Setting, ProcessingConfig
-from schematization.SchematizationAlgorithm import SchematizationAlgorithm
+from schematization.SimplificationAlgorithm import SimplificationAlgorithm
 # from schematization.RemovalAlgorithm import RemovalAlgorithm
 
 
@@ -42,7 +42,7 @@ class SchematizationAlgorithmProvider(AlgorithmProvider):
         self.activate = False
 
         # Load algorithms
-        self.alglist = [SchematizationAlgorithm()] #, RemovalAlgorithm()]
+        self.alglist = [SimplificationAlgorithm()] #, RemovalAlgorithm()]
         for alg in self.alglist:
             alg.provider = self
 
