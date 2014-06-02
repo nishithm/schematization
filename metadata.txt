@@ -1,0 +1,18 @@
+[general]
+name=Schematization Plugin Processing
+description=To provide functionality of creating schematic maps in Processing framework
+category=Analysis
+version=2.0
+qgisMinimumVersion=2.0
+
+author=Nishith Maheshwari
+email=nshthm@gmail.com
+
+tags=analysis,processing
+
+homepage=
+tracker=
+repository=
+
+experimental=True
+deprecated=False
