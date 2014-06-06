@@ -33,7 +33,7 @@ from schematization.SimplificationAlgorithm import SimplificationAlgorithm
 
 class SchematizationAlgorithmProvider(AlgorithmProvider):
 
-    MY_DUMMY_SETTING = 'MY_DUMMY_SETTING'
+    #MY_DUMMY_SETTING = 'MY_DUMMY_SETTING'
 
     def __init__(self):
         AlgorithmProvider.__init__(self)
@@ -55,17 +55,17 @@ class SchematizationAlgorithmProvider(AlgorithmProvider):
         deactivating the algorithms in the provider.
         """
         AlgorithmProvider.initializeSettings(self)
-        ProcessingConfig.addSetting(Setting('Example algorithms',
-                                    SchematizationAlgorithmProvider.MY_DUMMY_SETTING,
-                                    'Example setting', 'Default value'))
+        #ProcessingConfig.addSetting(Setting('Example algorithms',
+        #                            SchematizationAlgorithmProvider.MY_DUMMY_SETTING,
+        #                            'Example setting', 'Default value'))
 
     def unload(self):
         """Setting should be removed here, so they do not appear anymore
         when the plugin is unloaded.
         """
         AlgorithmProvider.unload(self)
-        ProcessingConfig.removeSetting(
-                SchematizationAlgorithmProvider.MY_DUMMY_SETTING)
+        #ProcessingConfig.removeSetting(
+        #        SchematizationAlgorithmProvider.MY_DUMMY_SETTING)
 
     def getName(self):
         """This is the name that will appear on the toolbox group.

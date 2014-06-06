@@ -34,6 +34,8 @@ from processing.core.GeoAlgorithm import GeoAlgorithm
 from processing.parameters.ParameterVector import ParameterVector
 from processing.outputs.OutputVector import OutputVector
 from processing.tools import dataobjects, vector
+from processing.parameters.ParameterString import ParameterString
+import processing
 
 
 class SimplificationAlgorithm(GeoAlgorithm):
@@ -55,6 +57,8 @@ class SimplificationAlgorithm(GeoAlgorithm):
 
     OUTPUT_LAYER = 'OUTPUT_LAYER'
     INPUT_LAYER = 'INPUT_LAYER'
+    THRES = 'THRES'
+    OUTPUT = 'OUTPUT'
 
     def defineCharacteristics(self):
         """Here we define the inputs and output of the algorithm, along
@@ -71,6 +75,8 @@ class SimplificationAlgorithm(GeoAlgorithm):
         # It is a mandatory (not optional) one, hence the False argument
         self.addParameter(ParameterVector(self.INPUT_LAYER, 'Input layer',
                           [ParameterVector.VECTOR_TYPE_ANY], False))
+        
+        self.addParameter(ParameterString(self.THRES, 'Threshold', default=2000))
 
         # We add a vector layer as output
         self.addOutput(OutputVector(self.OUTPUT_LAYER,
@@ -83,13 +89,15 @@ class SimplificationAlgorithm(GeoAlgorithm):
         # entered by the user
         inputFilename = self.getParameterValue(self.INPUT_LAYER)
         output = self.getOutputValue(self.OUTPUT_LAYER)
+        thres = self.getParameterValue(self.THRES)
 
         # Input layers vales are always a string with its location.
         # That string can be converted into a QGIS object (a
         # QgsVectorLayer in this case) using the
         # processing.getObjectFromUri() method.
-        vectorLayer = dataobjects.getObjectFromUri(inputFilename)
-
+        
+        inputLayer = dataobjects.getObjectFromUri(inputFilename)
+        
         # And now we can process
 
         # First we create the output layer. The output value entered by
@@ -97,10 +105,24 @@ class SimplificationAlgorithm(GeoAlgorithm):
         # directly
         settings = QSettings()
         systemEncoding = settings.value('/UI/encoding', 'System')
-        provider = vectorLayer.dataProvider()
+        provider = inputLayer.dataProvider()
         writer = QgsVectorFileWriter(output, systemEncoding,
                                      provider.fields(),
-                                     provider.geometryType(), provider.crs())
+                                     provider.geometryType(), provider.crs())              
+        
+        progress.setText('Dissolving Layer')
+        # Calling the Dissolve algorithm of processing
+        dissolved =  processing.runalg("qgis:dissolve", inputLayer, True, '', None)['OUTPUT']
+        dissolvedLayer = processing.getObject(dissolved)
+
+        progress.setPercentage(25)
+        
+        progress.setText('Converting from Multipart to Single parts')
+        # Calling the MultipartToSinglepart algorithm of processing
+        multi = processing.runalg("qgis:multiparttosingleparts", dissolvedLayer, None)['OUTPUT']
+        vectorLayer = processing.getObject(multi)
+        
+        progress.setPercentage(50)
 
         # Now we take the features from input layer and add them to the
         # output. Method features() returns an iterator, considering the
@@ -108,8 +130,7 @@ class SimplificationAlgorithm(GeoAlgorithm):
         # indicates should algorithm use only selected features or all
         # of them
         features = vectorLayer.getFeatures()
-        
-        
+                
         #From here the code of script starts
         
         f = QgsFeature()
@@ -121,20 +142,32 @@ class SimplificationAlgorithm(GeoAlgorithm):
         # Geometry must be multipart
         geom.convertToMultiType()
  
+        progress.setText('Adding geometries...')
+        i = 0
+        count = 25./vectorLayer.featureCount()
         # Now we iterate over other features and add their geometries as parts of our multipart geometry
         for f in features:
             geom.addPartGeometry(f.geometry())
+            progress.setPercentage(50+(i*count))
+            i += 1
         
         # To Simplify geometry
-        s = QgsTopologyPreservingSimplifier(2000)
+        s = QgsTopologyPreservingSimplifier(float(thres))
         s_geom = s.simplify(geom)   
         
         # Now we save simplified parts as separate features
+        progress.setText('Simplifying parts...')
         s_geom_list = s_geom.asMultiPolyline()
+        count = 25./len(s_geom_list)
+        i = 0
         for part in s_geom_list:
             f = QgsFeature()
             f.setGeometry( QgsGeometry.fromPolyline(part) )
             writer.addFeature(f)
+            progress.setPercentage(75+(i*count))
+            i += 1
+            
+        progress.setText('Simplification done !!')
                        
         # There is nothing more to do here. We do not have to open the
         # layer that we have created. The framework will take care of
