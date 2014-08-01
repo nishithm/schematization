@@ -47,6 +47,8 @@ def touches_cond( lay, D, ind):
             touches = ff.geometry().intersects(f.geometry())
             if touches:
                 D[f.id()].append(iid)
+        
+        D[f.id()].sort()
 
 
 
@@ -101,13 +103,14 @@ def find_intersect(att_line, ref_line, fid):
 
 # Rotate line
 
+'''
 def pre_rot(att_line, intersect, ref_line, lines_len):
     att_line = rotate_l(att_line, intersect[0], ref_line, lines_len, 1,0)
     att_line = rotate_l(att_line, intersect[1], ref_line, lines_len, 0,0)
     att_line = rotate_l(att_line, intersect[2], ref_line, lines_len, 1,1)
     att_line = rotate_l(att_line, intersect[3], ref_line, lines_len, 0,1)
     return att_line
-    
+'''    
                 
 def rotate_l(att_line, intersect, ref_line, lines_len, fl2, fl):
     
@@ -185,17 +188,16 @@ B = []
 
  
 
-def main():
+def nash():
+    c=0
+    c1=0
     layer = iface.activeLayer()
     
     temp1 = cpy_layer_feat(layer,"temp1")
     temp2 = cpy_layer_feat(layer,"temp2")
     
-    s1 = spat_ind(temp1)
-    s2 = spat_ind(temp2)
-    
-    t1 = getfeature(temp1)
-    t2 = getfeature(temp2)
+    t1 = get_feature(temp1)
+    t2 = get_feature(temp2)
     
     a1 = t1[1]
     lines1 = t1[2] 
@@ -203,12 +205,13 @@ def main():
     
     
     for i in range(0, len(a1)):
-        B.append(a1[i])
+        b = QgsGeometry.fromPolyline(a1[i])
+        B.append(b.asPolyline())
     
     
-    touches_cond( temp1 , D1, s1)
     
-    for i in range(0,len(att_line)):
+    
+    for i in range(0,len(a1)):
         MB[i] = 0
     
     MA.append(ffid1)
@@ -216,31 +219,51 @@ def main():
     for m in MA :
         MB[m] = 2
         iint = find_intersect(a1, a1[m], m)
-        A = pre_rot(a1, iint, a1[m], lines1) 
         
-        for i in range(0,len(a1)) :
-            g = QgsGeometry.fromPolyline(A[i])
-            temp2.dataProvider().changeGeometryValues({ i+1 : g })
+        ff1 = 1
+        ff2 = 0
+        for j in range(0,4):
+            if j>1:
+                ff2 = 1
+            A = rotate_l(a1, iint[j], a1[m], lines1, ff1 ,ff2)
+            ff1 = 1 - ff1
             
         
-        s2 = spat_ind(temp2)
-        touches_cond( temp2, D2, s2)
+            for i in range(0,len(a1)) :
+                g = QgsGeometry.fromPolyline(A[i])
+                temp2.dataProvider().changeGeometryValues({ i+1 : g })
+            
         
-        if D1==D2:
-            iter_temp = temp2.getFeatures()
-            temp1.startEditing()        
-            for i in range(0,len(att_line)) :
-                gg = QgsGeometry.fromPolyline(A[i])
-                temp1.dataProvider().changeGeometryValues({ i+1 : gg })
-                B[i] = a1[i]
+            s2 = spat_ind(temp2)
+            touches_cond( temp2, D2, s2)
             
-            temp1.commitchanges()
+            s1 = spat_ind(temp1)
+            touches_cond( temp1 , D1, s1)
             
-        else:
-            for i in range(0,len(att_line)):
-                a1[i] = B[i]
+        
+            if D1==D2:
+                c+=1
+                iter_temp = temp2.getFeatures()
+                temp1.startEditing()        
+                for i in range(0,len(a1)) :
+                    gg = QgsGeometry.fromPolyline(A[i])
+                    temp1.dataProvider().changeGeometryValues({ i+1 : gg })
+                
+                    b = QgsGeometry.fromPolyline(a1[i])
+                    B[i] = b.asPolyline()
+                
             
-    
+                temp1.commitChanges()
+            
+            else:
+                c1+=1
+                print j, m
+                for i in range(0,len(a1)):
+                    b = QgsGeometry.fromPolyline(B[i])
+                    a1[i] = b.asPolyline()
+            
+    print c
+    print c1
     QgsMapLayerRegistry.instance().addMapLayer(temp1)
 
                 
