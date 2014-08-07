@@ -90,7 +90,6 @@ def get_feature(layer):
             
     for i in range (0,len(lines)):
         if(lines[i] == max(lines)):
-            print i , max(lines)
             x = i
             # x = id of Longest line 
         
@@ -126,67 +125,60 @@ def rotate_l(att_line, intersect, ref_line, lines_len, fl2, fl):
 #                                ref_line = reference/base line, lines_len = list of length of lines,
 #                                fl and fl2 = flags which determines at which point the intersection is taking place
 
-    # ang1 = angle of reference line (slope)
-    ang1 = atan2( (ref_line[0][1] - ref_line[1][1]) , (ref_line[0][0] - ref_line[1][0]) )
-     
-    for i in intersect:
-        p = att_line[i][fl2]
-        
-        # ang2 = angle of the line to be oriented (slope)
-        ang2 = atan2( ref_line[fl][1] - p[1], ref_line[fl][0] - p[0]) 
+    p = att_line[intersect][fl2]
     
-        # ang3 = angle between the reference line and the intersecting line
-        ang3 = ang1-ang2
+    # ang = angle of the line to be oriented (slope)
+    ang = atan2( ref_line[fl][1] - p[1], ref_line[fl][0] - p[0]) 
+
+    if (ang > pi):
+        ang = ang - (2*pi)
+    elif (ang < (-1)*pi):
+        ang = (2*pi) + ang
     
-        if (ang3 > pi):
-            ang3 = ang3 - (2*pi)
-        elif (ang3 < (-1)*pi):
-            ang3 = (2*pi) + ang3
+    
+    # This if-else part computes 'newang' which is the desired angle between the two lines which is closest to the current angle between them.
+    if ( ( ang >= (-1)*pi ) and ( ang <= (-7)*pi/8.00) ):
+        newang = (-1)*pi
+    elif ( ( ang > (-7)*pi/8.00 ) and ( ang <= (-5)*pi/8.00) ):
+        newang = (-3)*pi/4.00
+    elif ( ( ang > (-5)*pi/8.00 ) and ( ang <= (-3)*pi/8.00) ):
+        newang = (-1)*pi/2.00
+    elif ( ( ang > (-3)*pi/8.00 ) and ( ang <= (-1)*pi/8.00) ):
+        newang = (-1)*pi/4.00
+    elif ( ( ang > (-1)*pi/8.00 ) and ( ang <= pi/8.00)):
+        newang = 0
+    elif ( ( ang > pi/8.00 ) and ( ang <= 3*pi/8.00)):
+        newang = pi/4.00
+    elif ( ( ang > 3*pi/8.00 ) and ( ang <= 5*pi/8.00)):
+        newang = pi/2.00
+    elif ( ( ang > 5*pi/8.00 ) and ( ang <= 7*pi/8.00)):
+        newang = 3*pi/4.00
+    elif ( ( ang > 7*pi/8.00 ) and ( ang <= pi)):
+        newang = pi
         
-        
-        # This if-else part computes 'newang' which is the desired angle between the two lines which is closest to the current angle between them.
-        if ( ( ang3 >= (-1)*pi ) and ( ang3 <= (-7)*pi/8.00) ):
-            newang = (-1)*pi
-        elif ( ( ang3 > (-7)*pi/8.00 ) and ( ang3 <= (-5)*pi/8.00) ):
-            newang = (-3)*pi/4.00
-        elif ( ( ang3 > (-5)*pi/8.00 ) and ( ang3 <= (-3)*pi/8.00) ):
-            newang = (-1)*pi/2.00
-        elif ( ( ang3 > (-3)*pi/8.00 ) and ( ang3 <= (-1)*pi/8.00) ):
-            newang = (-1)*pi/4.00
-        elif ( ( ang3 > (-1)*pi/8.00 ) and ( ang3 <= pi/8.00)):
-            newang = 0
-        elif ( ( ang3 > pi/8.00 ) and ( ang3 <= 3*pi/8.00)):
-            newang = pi/4.00
-        elif ( ( ang3 > 3*pi/8.00 ) and ( ang3 <= 5*pi/8.00)):
-            newang = pi/2.00
-        elif ( ( ang3 > 5*pi/8.00 ) and ( ang3 <= 7*pi/8.00)):
-            newang = 3*pi/4.00
-        elif ( ( ang3 > 7*pi/8.00 ) and ( ang3 <= pi)):
-            newang = pi
+
+    # finang = angle of the oriented line (slope) 
+    finang = pi + newang
+
+    MA.append(intersect)
+    MB[intersect] = 1
+    
+    # newp = the new point of the end which is rotated 
+    newp = QgsPoint( ref_line[fl][0] + ( lines_len[intersect] * cos(finang)) , ref_line[fl][1] + ( lines_len[intersect] * sin(finang)) )
+    att_line[intersect][fl2] = newp
+
+    # changing to the 'newp' in all the lines having the point which is to be rotated
+    for j in range(0,len(att_line)):
+        if att_line[j][0] == p :
+            att_line[j][0] = newp
+            if MB[j] == 2:
+                MB[j] = 0
             
-    
-        # finang = angle of the oriented line (slope) 
-        finang = pi + ang1 - newang
-    
-        MA.append(i)
-        MB[i] = 1
-        
-        # newp = the new point of the end which is rotated 
-        newp = QgsPoint( ref_line[fl][0] + ( lines_len[i] * cos(finang)) , ref_line[fl][1] + ( lines_len[i] * sin(finang)) )
-        att_line[i][fl2] = newp
-    
-        # changing to the 'newp' in all the lines having the point which is to be rotated
-        for j in range(0,len(att_line)):
-            if att_line[j][0] == p :
-                att_line[j][0] = newp
-                if MB[j] == 2:
-                    MB[j] = 0
-                
-                
-            elif att_line[j][1] == p :
-                att_line[j][1] = newp
-                if MB[j] == 2:
-                    MB[j] = 0
+            
+        elif att_line[j][1] == p :
+            att_line[j][1] = newp
+            if MB[j] == 2:
+                MB[j] = 0
             
     return att_line
 
@@ -242,55 +234,61 @@ def nash():
         MB[i] = 0
     
     MA.append(ffid1)
-    
+    fff = 1
     for m in MA :
         MB[m] = 2
-        iint = find_intersect(a1, a1[m], m)
+        if fff :
+            iint = [ [] , [] , [] , [m] ]
+            fff=0
+        else :
+            iint = find_intersect(a1, a1[m], m)
+            
         
         ff1 = 1
         ff2 = 0
         for j in range(0,4):
             if j>1:
                 ff2 = 1
-            A = rotate_l(a1, iint[j], a1[m], lines1, ff1 ,ff2)
-            ff1 = 1 - ff1
             
-        
-            for i in range(0,len(a1)) :
-                g = QgsGeometry.fromPolyline(A[i])
-                temp2.dataProvider().changeGeometryValues({ i+1 : g })
+            for inter_sect in iint[j]:
+                
+                A = rotate_l(a1, inter_sect, a1[m], lines1, ff1 ,ff2)
+                
+                
             
-        
-            s2 = spat_ind(temp2)
-            touches_cond( temp2, D2, s2)
-            
-            s1 = spat_ind(temp1)
-            touches_cond( temp1 , D1, s1)
-            
-        
-            if D1==D2:
-                c+=1
-                iter_temp = temp2.getFeatures()
-                temp1.startEditing()        
                 for i in range(0,len(a1)) :
-                    gg = QgsGeometry.fromPolyline(A[i])
-                    temp1.dataProvider().changeGeometryValues({ i+1 : gg })
-                
-                    b = QgsGeometry.fromPolyline(a1[i])
-                    B[i] = b.asPolyline()
+                    g = QgsGeometry.fromPolyline(A[i])
+                    temp2.dataProvider().changeGeometryValues({ i+1 : g })
                 
             
-                temp1.commitChanges()
+                s2 = spat_ind(temp2)
+                touches_cond( temp2, D2, s2)
+                
+                s1 = spat_ind(temp1)
+                touches_cond( temp1 , D1, s1)
+                
             
-            else:
-                c1+=1
-                print j, m
-                for i in range(0,len(a1)):
-                    b = QgsGeometry.fromPolyline(B[i])
-                    a1[i] = b.asPolyline()
+                if D1==D2:
+                    c+=1
+                    iter_temp = temp2.getFeatures()
+                    temp1.startEditing()        
+                    for i in range(0,len(a1)) :
+                        gg = QgsGeometry.fromPolyline(A[i])
+                        temp1.dataProvider().changeGeometryValues({ i+1 : gg })
+                    
+                        b = QgsGeometry.fromPolyline(a1[i])
+                        B[i] = b.asPolyline()
+                    
+                
+                    temp1.commitChanges()
+                
+                else:
+                    c1+=1
+                    for i in range(0,len(a1)):
+                        b = QgsGeometry.fromPolyline(B[i])
+                        a1[i] = b.asPolyline()
             
-    print c
-    print c1
+            ff1 = 1 - ff1
     QgsMapLayerRegistry.instance().addMapLayer(temp1)
 
                 
