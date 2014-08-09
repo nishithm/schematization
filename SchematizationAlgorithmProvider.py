@@ -28,7 +28,7 @@ __revision__ = '$Format:%H$'
 from processing.core.AlgorithmProvider import AlgorithmProvider
 from processing.core.ProcessingConfig import Setting, ProcessingConfig
 from schematization.SimplificationAlgorithm import SimplificationAlgorithm
-# from schematization.RemovalAlgorithm import RemovalAlgorithm
+from schematization.AngleConstraintAlgorithm import AngleConstraintAlgorithm
 
 
 class SchematizationAlgorithmProvider(AlgorithmProvider):
@@ -42,7 +42,7 @@ class SchematizationAlgorithmProvider(AlgorithmProvider):
         self.activate = False
 
         # Load algorithms
-        self.alglist = [SimplificationAlgorithm()] #, RemovalAlgorithm()]
+        self.alglist = [SimplificationAlgorithm(), AngleConstraintAlgorithm()]
         for alg in self.alglist:
             alg.provider = self
 
