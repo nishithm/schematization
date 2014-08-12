@@ -2,7 +2,7 @@
 
 """
 ***************************************************************************
-    __init__.py
+    SchematizationAlgorithmProvider.py
     ---------------------
     Date                 : May 2014
     Copyright            : (C) 2014 by Nishith Maheshwari
@@ -33,15 +33,14 @@ from schematization.AngleConstraintAlgorithm import AngleConstraintAlgorithm
 
 class SchematizationAlgorithmProvider(AlgorithmProvider):
 
-    #MY_DUMMY_SETTING = 'MY_DUMMY_SETTING'
-
     def __init__(self):
         AlgorithmProvider.__init__(self)
 
         # Deactivate provider by default
         self.activate = False
 
-        # Load algorithms
+        # Load algorithms : We have the Simplification algorithm and the algorithm
+        #                   to apply the angle constraints
         self.alglist = [SimplificationAlgorithm(), AngleConstraintAlgorithm()]
         for alg in self.alglist:
             alg.provider = self
@@ -49,54 +48,29 @@ class SchematizationAlgorithmProvider(AlgorithmProvider):
     def initializeSettings(self):
         """In this method we add settings needed to configure our
         provider.
-
-        Do not forget to call the parent method, since it takes care
-        or automatically adding a setting for activating or
-        deactivating the algorithms in the provider.
         """
         AlgorithmProvider.initializeSettings(self)
-        #ProcessingConfig.addSetting(Setting('Example algorithms',
-        #                            SchematizationAlgorithmProvider.MY_DUMMY_SETTING,
-        #                            'Example setting', 'Default value'))
-
+        
     def unload(self):
-        """Setting should be removed here, so they do not appear anymore
+        """Setting is removed here, so it does not appear anymore
         when the plugin is unloaded.
         """
         AlgorithmProvider.unload(self)
-        #ProcessingConfig.removeSetting(
-        #        SchematizationAlgorithmProvider.MY_DUMMY_SETTING)
-
+        
     def getName(self):
-        """This is the name that will appear on the toolbox group.
-
+        """The name that will appear on the toolbox group.
         It is also used to create the command line name of all the
         algorithms from this provider.
         """
         return 'Schematization Provider'
 
     def getDescription(self):
-        """This is the provired full name.
-        """
         return 'Schematization algorithms'
 
     def getIcon(self):
-        """We return the default icon.
-        """
+        """Returns the default icon."""
         return AlgorithmProvider.getIcon(self)
 
     def _loadAlgorithms(self):
-        """Here we fill the list of algorithms in self.algs.
-
-        This method is called whenever the list of algorithms should
-        be updated. If the list of algorithms can change (for instance,
-        if it contains algorithms from user-defined scripts and a new
-        script might have been added), you should create the list again
-        here.
-
-        In this case, since the list is always the same, we assign from
-        the pre-made list. This assignment has to be done in this method
-        even if the list does not change, since the self.algs list is
-        cleared before calling this method.
-        """
+        """The list of algorithms in self.algs."""
         self.algs = self.alglist

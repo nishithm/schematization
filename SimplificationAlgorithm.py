@@ -2,7 +2,7 @@
 
 """
 ***************************************************************************
-    __init__.py
+    SimplificationAlgorithm.py
     ---------------------
     Date                 : May 2014
     Copyright            : (C) 2014 by Nishith Maheshwari
@@ -39,21 +39,9 @@ import processing
 
 
 class SimplificationAlgorithm(GeoAlgorithm):
-    """This is an example algorithm that takes a vector layer and
-    creates a new one just with just those features of the input
-    layer that are selected.
-
-    It is meant to be used as an example of how to create your own
-    algorithms and explain methods and variables used to do it. An
-    algorithm like this will be available in all elements, and there
-    is not need for additional work.
-
-    All Processing algorithms should extend the GeoAlgorithm class.
+    """This is an algorithm that takes a vector layer and creates
+    a new layer which is a simplified version of the input.
     """
-
-    # Constants used to refer to parameters and outputs. They will be
-    # used when calling the algorithm from another algorithm, or when
-    # calling from the QGIS console.
 
     OUTPUT_LAYER = 'OUTPUT_LAYER'
     INPUT_LAYER = 'INPUT_LAYER'
@@ -61,18 +49,14 @@ class SimplificationAlgorithm(GeoAlgorithm):
     OUTPUT = 'OUTPUT'
 
     def defineCharacteristics(self):
-        """Here we define the inputs and output of the algorithm, along
-        with some other properties.
-        """
-
+       
         # The name that the user will see in the toolbox
         self.name = 'Topology Preserving Simplifier'
 
         # The branch of the toolbox under which the algorithm will appear
         self.group = 'Algorithms for simplifying layers'
 
-        # We add the input vector layer. It can have any kind of geometry
-        # It is a mandatory (not optional) one, hence the False argument
+        # We add the input vector layer.
         self.addParameter(ParameterVector(self.INPUT_LAYER, 'Input layer',
                           [ParameterVector.VECTOR_TYPE_ANY], False))
         
@@ -83,7 +67,6 @@ class SimplificationAlgorithm(GeoAlgorithm):
                        'Simplified output layer'))
 
     def processAlgorithm(self, progress):
-        """Here is where the processing itself takes place."""
 
         # The first thing to do is retrieve the values of the parameters
         # entered by the user
@@ -95,10 +78,9 @@ class SimplificationAlgorithm(GeoAlgorithm):
         # That string can be converted into a QGIS object (a
         # QgsVectorLayer in this case) using the
         # processing.getObjectFromUri() method.
-        
         inputLayer = dataobjects.getObjectFromUri(inputFilename)
         
-        # And now we can process
+        # And now we can start the processing part
 
         # First we create the output layer. The output value entered by
         # the user is a string containing a filename, so we can use it
@@ -108,7 +90,7 @@ class SimplificationAlgorithm(GeoAlgorithm):
         provider = inputLayer.dataProvider()
         writer = QgsVectorFileWriter(output, systemEncoding,
                                      provider.fields(),
-                                     provider.geometryType(), provider.crs())              
+                                     provider.geometryType(), inputLayer.crs())              
         
         progress.setText('Dissolving Layer')
         # Calling the Dissolve algorithm of processing
@@ -124,15 +106,8 @@ class SimplificationAlgorithm(GeoAlgorithm):
         
         progress.setPercentage(50)
 
-        # Now we take the features from input layer and add them to the
-        # output. Method features() returns an iterator, considering the
-        # selection that might exist in layer and the configuration that
-        # indicates should algorithm use only selected features or all
-        # of them
         features = vectorLayer.getFeatures()
-                
-        #From here the code of script starts
-        
+                      
         f = QgsFeature()
  
         # Now we take the first feature from layer and create a new geometry copied from geometry of that feature
@@ -145,6 +120,7 @@ class SimplificationAlgorithm(GeoAlgorithm):
         progress.setText('Adding geometries...')
         i = 0
         count = 25./vectorLayer.featureCount()
+        
         # Now we iterate over other features and add their geometries as parts of our multipart geometry
         for f in features:
             geom.addPartGeometry(f.geometry())
@@ -168,8 +144,3 @@ class SimplificationAlgorithm(GeoAlgorithm):
             i += 1
             
         progress.setText('Simplification done !!')
-                       
-        # There is nothing more to do here. We do not have to open the
-        # layer that we have created. The framework will take care of
-        # that, or will handle it if this algorithm is executed within
-        # a complex model

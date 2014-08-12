@@ -2,7 +2,7 @@
 
 """
 ***************************************************************************
-    __init__.py
+    SchematizationPlugin.py
     ---------------------
     Date                 : May 2014
     Copyright            : (C) 2014 by Nishith Maheshwari

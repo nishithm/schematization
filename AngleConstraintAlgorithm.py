@@ -2,7 +2,7 @@
 
 """
 ***************************************************************************
-    __init__.py
+    AngleConstraintAlgorithm.py
     ---------------------
     Date                 : August 2014
     Copyright            : (C) 2014 by Nishith Maheshwari
@@ -42,14 +42,8 @@ import processing
 
 class AngleConstraintAlgorithm(GeoAlgorithm):
     
-    # Constants used to refer to parameters and outputs. They will be
-    # used when calling the algorithm from another algorithm, or when
-    # calling from the QGIS console.
-
     OUTPUT_LAYER = 'OUTPUT_LAYER'
     INPUT_LAYER = 'INPUT_LAYER'
-    
-    #OUTPUT = 'OUTPUT'
     
     D1 = {}
     D2 = {}
@@ -59,11 +53,10 @@ class AngleConstraintAlgorithm(GeoAlgorithm):
 
     # Copy Layer
     def cpy_layer_feat( self , L , s):
-        
     #  This is a function to return a copy of the input layer 'L'
     #  Parameters : Input Layer = L , Name of the layer = s, Output Layer (copy) = ans
     
-        ans = QgsVectorLayer("LineString",s,"memory")
+        ans = QgsVectorLayer("LineString?crs=epsg:%d" % L.crs().postgisSrid(),s,"memory")
         ans.startEditing()
         W = ans.dataProvider()
         W.addAttributes( [ QgsField("cat",QVariant.Int) ] )
@@ -81,7 +74,6 @@ class AngleConstraintAlgorithm(GeoAlgorithm):
 
     # Create spatial index
     def spat_ind(self, layer):
-        
     #  This function returns the spatial index of the layer 'layer'
     
         ind = QgsSpatialIndex()
@@ -93,7 +85,6 @@ class AngleConstraintAlgorithm(GeoAlgorithm):
     
     
     def touches_cond(self, lay, D, ind):
-    
     # This function populates the dictionary 'D' with the intersection data of layer 'lay' using the spatial index 'ind'
     #  The data is stored in the dictionary in the form " D[4] will contain a list of the ids of the features which intersect the feature with id=4 " 
     
@@ -154,7 +145,6 @@ class AngleConstraintAlgorithm(GeoAlgorithm):
     
     # Find intersections
     def find_intersect(self, att_line, ref_line, fid):
-    
     # This function returns a list of lists of ids of features intersecting ref_line
         intersect = [ [], [], [], [] ]
         
@@ -173,7 +163,6 @@ class AngleConstraintAlgorithm(GeoAlgorithm):
     
     # Rotate line                
     def rotate_l(self, att_line, intersect, ref_line, lines_len, fl2, fl):
-        
     # This function takes in input : att_line = list of geometries of lines, intersect = a list of ids which intersect ref_line,
     #                                ref_line = reference/base line, lines_len = list of length of lines,
     #                                fl and fl2 = flags which determines at which point the intersection is taking place
@@ -189,7 +178,8 @@ class AngleConstraintAlgorithm(GeoAlgorithm):
             ang = (2*pi) + ang
         
         
-        # This if-else part computes 'newang' which is the desired angle between the two lines which is closest to the current angle between them.
+        # This if-else part computes 'newang' which is the desired angle between 
+        # the two lines which is closest to the current angle between them.
         if ( ( ang >= (-1)*pi ) and ( ang <= (-7)*pi/8.00) ):
             newang = (-1)*pi
         elif ( ( ang > (-7)*pi/8.00 ) and ( ang <= (-5)*pi/8.00) ):
@@ -237,7 +227,6 @@ class AngleConstraintAlgorithm(GeoAlgorithm):
     
 
 
-
     def defineCharacteristics(self):
         """Here we define the inputs and output of the algorithm, along
         with some other properties.
@@ -247,7 +236,7 @@ class AngleConstraintAlgorithm(GeoAlgorithm):
         self.name = 'Applying Angle constraint'
 
         # The branch of the toolbox under which the algorithm will appear
-        self.group = 'Algorithms for simplifying layers'
+        self.group = 'Algorithms for applying constraints'
 
         # We add the input vector layer. It can have any kind of geometry
         # It is a mandatory (not optional) one, hence the False argument
@@ -259,7 +248,6 @@ class AngleConstraintAlgorithm(GeoAlgorithm):
                        'Layer with Angle constraints'))
 
     def processAlgorithm(self, progress):
-        """Here is where the processing itself takes place."""
 
         # The first thing to do is retrieve the values of the parameters
         # entered by the user
@@ -270,14 +258,8 @@ class AngleConstraintAlgorithm(GeoAlgorithm):
         # That string can be converted into a QGIS object (a
         # QgsVectorLayer in this case) using the
         # processing.getObjectFromUri() method.
-        
         layer = dataobjects.getObjectFromUri(inputFilename)
         
-        # And now we can process
-
-        # First we create the output layer. The output value entered by
-        # the user is a string containing a filename, so we can use it
-        # directly
         settings = QSettings()
         systemEncoding = settings.value('/UI/encoding', 'System')
         provider = layer.dataProvider()
@@ -302,10 +284,8 @@ class AngleConstraintAlgorithm(GeoAlgorithm):
         for i in range(0, len(a1)):
             b = QgsGeometry.fromPolyline(a1[i])
             self.B.append(b.asPolyline())
-        
-        
-        
-        
+
+
         for i in range(0,len(a1)):
             self.MB[i] = 0
         
@@ -328,9 +308,7 @@ class AngleConstraintAlgorithm(GeoAlgorithm):
                 
                 for inter_sect in iint[j]:
                     
-                    A = self.rotate_l(a1, inter_sect, a1[m], lines1, ff1 ,ff2)
-                    
-                    
+                    A = self.rotate_l(a1, inter_sect, a1[m], lines1, ff1 ,ff2)                    
                 
                     for i in range(0,len(a1)) :
                         g = QgsGeometry.fromPolyline(A[i])
