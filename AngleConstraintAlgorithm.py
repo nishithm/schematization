@@ -291,6 +291,10 @@ class AngleConstraintAlgorithm(GeoAlgorithm):
         
         self.MA.append(ffid1)
         fff = 1
+        
+        progress.setText('Applying angle constraint...')
+        denom = 100./(layer.featureCount() * 1.5)
+        count = 0
         for m in self.MA :
             self.MB[m] = 2
             if fff :
@@ -341,8 +345,11 @@ class AngleConstraintAlgorithm(GeoAlgorithm):
                             a1[i] = b.asPolyline()
                 
                 ff1 = 1 - ff1
-    
+            percent = denom*count
+            if(percent < 100):
+                progress.setPercentage(percent)
+
         FF = temp1.getFeatures()
         for f in FF :
             writer.addFeature(f)
-    
+        progress.setPercentage(100)
