@@ -4,6 +4,7 @@ Schematization Plug-in for QGIS
 This is part of GSOC 2014 project for QGIS under Open Source Geospatial Foundation (OSGEO).
 
 For weekly reports and more details check - http://hub.qgis.org/wiki/quantum-gis/nishithm
+
 A detailed report of the project can be seen at - https://dl.dropboxusercontent.com/u/86965637/schematization_gsoc2014.pdf
 
 How to install
