@@ -33,10 +33,10 @@ from math import pi, atan2, cos, sin, atan
 
 from processing.core.Processing import Processing
 from processing.core.GeoAlgorithm import GeoAlgorithm
-from processing.parameters.ParameterVector import ParameterVector
-from processing.outputs.OutputVector import OutputVector
+from processing.core.parameters import ParameterVector
+from processing.core.outputs import OutputVector
 from processing.tools import dataobjects, vector
-from processing.parameters.ParameterString import ParameterString
+from processing.core.parameters import ParameterString
 import processing
 
 
